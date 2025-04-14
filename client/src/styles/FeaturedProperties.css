@@ -1,0 +1,44 @@
+.featured-properties {
+  padding: 5rem 2rem;
+  background: #f9f9f9;
+  text-align: center;
+}
+
+.section-header {
+  margin-bottom: 3rem;
+}
+
+.section-subtitle {
+  font-size: 1.2rem;
+  color: #3498db;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  font-weight: 700;
+  margin: 0;
+}
+
+.properties-scroll-container {
+  overflow: hidden;
+  position: relative;
+  padding: 1rem 0;
+}
+
+.properties-scroll {
+  display: flex;
+  gap: 2rem;
+  animation: scroll 30s linear infinite;
+  width: max-content;
+  will-change: transform;
+}
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "propex-client",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "formik": "^2.4.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.30.0",
+    "react-scripts": "^5.0.1",
+    "yup": "^1.6.1"
+  },
+  "devDependencies": {
+    "webpack-bundle-analyzer": "^4.9.1",
+    "speed-measure-webpack-plugin": "^1.5.0", 
+    "source-map-explorer": "^2.5.3"
+  },
+  "scripts": {
+    "start": "BROWSER=none react-scripts start --profile",
+    "build": "react-scripts build",
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "profile": "react-scripts --profile build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

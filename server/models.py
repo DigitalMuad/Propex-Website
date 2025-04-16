@@ -1,4 +1,4 @@
-from .extensions import db
+from extensions import db
 
 class Property(db.Model):
     __tablename__ = 'property'  # Define the table name

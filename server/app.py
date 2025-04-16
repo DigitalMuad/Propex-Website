@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
-from .extensions import db, migrate
-from .config import Config
+from extensions import db, migrate
+from config import Config
 
 def create_app():
     app = Flask(__name__)
@@ -19,7 +19,7 @@ def create_app():
     })
 
     # Register blueprints
-    from .routes import auth_bp, properties_bp
+    from routes import auth_bp, properties_bp
     app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(properties_bp, url_prefix='/api')
 

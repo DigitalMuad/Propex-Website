@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, make_response, current_app
-from models import db, Property, User
+from .models import db, Property, User
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
@@ -11,20 +11,21 @@ properties_bp = Blueprint('properties', __name__)
 auth_bp = Blueprint('auth', __name__)
 
 # Authentication Routes
-@auth_bp.route('/api/register', methods=['POST'])
+@auth_bp.route('/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
+        print("Received data for registration:", data)  # Log the incoming data
         
         # Check if user already exists
         if User.query.filter_by(email=data['email']).first():
             return jsonify({'message': 'Email already registered'}), 400
 
-        hashed_password = generate_password_hash(data['password'], method='sha256')
+        hashed_password = generate_password_hash(data['password'], method='pbkdf2:sha256')
         new_user = User(
             username=data['username'],
             email=data['email'],
-            password=hashed_password
+            password_hash=hashed_password
         )
         
         db.session.add(new_user)
@@ -41,14 +42,17 @@ def register():
         }), 201
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         db.session.rollback()
         return jsonify({'message': f'Registration failed: {str(e)}'}), 500
 
-@auth_bp.route('/api/login', methods=['POST'])
+
+@auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     user = User.query.filter_by(email=data['email']).first()
-    if not user or not check_password_hash(user.password, data['password']):
+    if not user or not check_password_hash(user.password_hash, data['password']):
         return jsonify({'message': 'Invalid credentials'}), 401
     
     token = jwt.encode({
@@ -64,20 +68,45 @@ def login():
 # Property Routes (CRUD operations)
 @properties_bp.route('/properties', methods=['POST'])
 def create_property():
-    data = request.get_json()
-    property = Property(
-        title=data['title'],
-        description=data['description'],
-        price=data['price'],
-        location=data['location'],
-        bedrooms=data.get('bedrooms', 3),
-        bathrooms=data.get('bathrooms', 2),
-        sqft=data.get('sqft', 1500),
-        image_url=data.get('image_url')
-    )
-    db.session.add(property)
-    db.session.commit()
-    return jsonify(property.to_dict()), 201
+    try:
+        # Get the token from the Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({'message': 'No authorization header'}), 401
+        
+        token = auth_header.split(' ')[1]  # Remove 'Bearer ' prefix
+        
+        # Verify the token
+        try:
+            data = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
+            user_id = data['user_id']
+        except:
+            return jsonify({'message': 'Invalid token'}), 401
+
+        # Get property data from request
+        data = request.get_json()
+        
+        property = Property(
+            title=data['title'],
+            description=data['description'],
+            price=data['price'],
+            location=data['location'],
+            bedrooms=data.get('bedrooms', 3),
+            bathrooms=data.get('bathrooms', 2),
+            sqft=data.get('sqft', 1500),
+            image_url=data.get('image_url'),
+            owner_id=user_id
+        )
+        
+        db.session.add(property)
+        db.session.commit()
+        
+        return jsonify(property.to_dict()), 201
+        
+    except Exception as e:
+        print(f"Error creating property: {str(e)}")
+        db.session.rollback()
+        return jsonify({'message': f'Error creating property: {str(e)}'}), 500
 
 # Protected Route Example
 @properties_bp.route('/protected', methods=['GET'])
@@ -95,7 +124,7 @@ def protected():
     return jsonify({'message': f'Hello {current_user.username}'}), 200
 
 # Debug Route
-@auth_bp.route('/api/debug/users', methods=['GET'])
+@auth_bp.route('/debug/users', methods=['GET'])
 def debug_users():
     users = User.query.all()
     return jsonify([{

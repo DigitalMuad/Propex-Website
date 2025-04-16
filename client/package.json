@@ -16,7 +16,7 @@
     "source-map-explorer": "^2.5.3"
   },
   "scripts": {
-    "start": "BROWSER=none react-scripts start --profile",
+    "start": "react-scripts start --profile",
     "build": "react-scripts build",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "profile": "react-scripts --profile build",

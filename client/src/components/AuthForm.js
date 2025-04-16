@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function AuthForm({ isLogin, onSuccess }) {
   const [name, setName] = useState('');
@@ -6,6 +7,7 @@ function AuthForm({ isLogin, onSuccess }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -16,25 +18,32 @@ function AuthForm({ isLogin, onSuccess }) {
 
     setError('');
     setIsLoading(true);
+
     fetch(`http://localhost:5000${endpoint}`, {
       method: 'POST',
-      mode: 'cors',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify(body),
     })
-    .then(res => {
+    .then(async (res) => {
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error('Authentication failed');
+        throw new Error(data.message || 'Authentication failed');
       }
-      return res.json();
+      return data;
     })
     .then((data) => {
-      if (data.message === 'Login successful' || data.message === 'User created successfully') {
+      if (isLogin) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
         onSuccess(data);
+        navigate('/');
       } else {
-        throw new Error(data.message || 'Authentication failed');
+        alert('Registration successful! Please log in.');
+        navigate('/auth', { state: { isLogin: true }});
       }
     })
     .catch((err) => {
@@ -73,10 +82,7 @@ function AuthForm({ isLogin, onSuccess }) {
         required
       />
       {error && <div className="error-message">{error}</div>}
-      <button 
-        type="submit"
-        disabled={isLoading}
-      >
+      <button type="submit" disabled={isLoading}>
         {isLoading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
       </button>
     </form>

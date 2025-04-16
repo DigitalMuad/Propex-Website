@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function CreateProperty() {
   const [title, setTitle] = useState('');
@@ -9,41 +10,54 @@ function CreateProperty() {
   const [bathrooms, setBathrooms] = useState('');
   const [sqft, setSqft] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      alert('Please login to add a property');
+      navigate('/auth');
+      return;
+    }
+
     const newProperty = {
       title,
       description,
-      price,
+      price: Number(price),
       location,
-      bedrooms,
-      bathrooms,
-      sqft,
+      bedrooms: Number(bedrooms),
+      bathrooms: Number(bathrooms),
+      sqft: Number(sqft),
       image_url: imageUrl,
     };
 
-    fetch('http://localhost:5555/api/', {
+    fetch('http://localhost:5000/api/properties', {
       method: 'POST',
+      credentials: 'include', // Add this line
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
       },
       body: JSON.stringify(newProperty),
     })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log('Property added:', data);
-        // Reset form fields
-        setTitle('');
-        setDescription('');
-        setPrice('');
-        setLocation('');
-        setBedrooms('');
-        setBathrooms('');
-        setSqft('');
-        setImageUrl('');
-      })
-      .catch((err) => console.error('Error adding property:', err));
+    .then(async (res) => {
+      const text = await res.text();
+      if (!res.ok) {
+        throw new Error(text || 'Failed to create property');
+      }
+      return text ? JSON.parse(text) : {};
+    })
+    .then((data) => {
+      alert('Property added successfully!');
+      navigate('/properties');
+    })
+    .catch((err) => {
+      console.error('Error adding property:', err);
+      alert(`Failed to add property: ${err.message}`);
+    });
   };
 
   return (

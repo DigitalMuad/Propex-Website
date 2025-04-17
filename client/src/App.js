@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import PropertiesPage from './pages/PropertiesPage';
 import AddPropertyPage from './pages/AddPropertyPage';
 import AuthPage from './pages/AuthPage';
+import PropertyDetail from './components/PropertyDetail'; // Import the PropertyDetail component
 import './styles/Navbar.css';
 import './styles/HomePage.css';
 import './styles/PropertiesPage.css';
@@ -27,6 +28,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/properties" element={<PropertiesPage />} />
+        <Route path="/properties/:id" element={<PropertyDetail />} /> {/* Add route for property details */}
         <Route path="/add-property" element={
           <ProtectedRoute>
             <AddPropertyPage />

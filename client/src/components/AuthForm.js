@@ -9,50 +9,39 @@ function AuthForm({ isLogin, onSuccess }) {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const endpoint = isLogin ? '/api/login' : '/api/register';
-    const body = isLogin 
-      ? { email, password }
-      : { username: name, email, password };
+    setError(''); // Use setError
+    setIsLoading(true); // Use setIsLoading
 
-    setError('');
-    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-    fetch(`http://localhost:5000${endpoint}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(body),
-    })
-    .then(async (res) => {
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Authentication failed');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Authentication failed');
       }
-      return data;
-    })
-    .then((data) => {
-      if (isLogin) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        onSuccess(data);
-        navigate('/');
-      } else {
-        alert('Registration successful! Please log in.');
-        navigate('/auth', { state: { isLogin: true }});
-      }
-    })
-    .catch((err) => {
-      console.error('Auth error:', err);
-      setError(err.message || 'Authentication failed');
-    })
-    .finally(() => {
+
+      const data = await response.json();
+      onSuccess(data); // Use the data
+      navigate('/'); // Use navigate
+      
+    } catch (error) {
+      setError(error.message);
+      console.error('Auth error:', error);
+    } finally {
       setIsLoading(false);
-    });
+    }
   };
 
   return (

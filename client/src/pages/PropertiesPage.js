@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import luxuryProperties from '../data/luxuryProperties';
 import '../styles/PropertiesPage.css';
 
@@ -8,7 +9,7 @@ const PropertiesPage = () => {
       <h1 className="page-title">Luxury Properties</h1>
       <div className="properties-container">
         {luxuryProperties.map(property => (
-          <div key={property.id} className="property-card">
+          <Link to={`/properties/${property.id}`} key={property.id} className="property-card">
             <img 
               src={property.image_url} 
               alt={property.title}
@@ -34,7 +35,7 @@ const PropertiesPage = () => {
                 </span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

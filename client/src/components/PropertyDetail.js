@@ -1,39 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import '../styles/PropertyDetail.css'; // Assuming a CSS file for styling
 
-function PropertyDetail() {
-  const [property, setProperty] = useState(null);
+const PropertyDetail = () => {
   const { id } = useParams();
+  const [property, setProperty] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:5555/api/${id}`)
-      .then(res => res.json())
-      .then(data => setProperty(data))
-      .catch(err => console.error('Error fetching property:', err));
+    const fetchProperty = async () => {
+      const response = await fetch(`/api/properties/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProperty(data);
+      } else {
+        console.error('Failed to fetch property details');
+      }
+    };
+
+    fetchProperty();
   }, [id]);
 
-  if (!property) return <div>Loading...</div>;
+  if (!property) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div>
-      <img 
-        src={property.image_url} 
-        alt={property.title}
-        style={{ width: '300px', height: '200px', objectFit: 'cover' }}
-      />
-      <h2>{property.title}</h2>
-      <p>Price: ${property.price}</p>
+    <div className="property-detail">
+      <h1>{property.title}</h1>
+      <img src={property.image_url} alt={property.title} />
+      <p>{property.description}</p>
+      <p>Price: ${property.price.toLocaleString()}</p>
       <p>Location: {property.location}</p>
-      <p>Description: {property.description}</p>
-      <h3>Reviews</h3>
-      {property.reviews && property.reviews.map(review => (
-        <div key={review.id}>
-          <p>Rating: {review.rating}/5</p>
-          <p>{review.content}</p>
-        </div>
-      ))}
+      <p>Bedrooms: {property.bedrooms}</p>
+      <p>Bathrooms: {property.bathrooms}</p>
+      <p>Size: {property.sqft} sqft</p>
     </div>
   );
-}
+};
 
 export default PropertyDetail;
